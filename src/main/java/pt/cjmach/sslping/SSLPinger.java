@@ -63,8 +63,8 @@ public class SSLPinger {
     }
 
     /**
-     * Creates a new instance of {@link SSLPinger} with the algorithm specified 
-     * through the parameter.
+     * Creates a new instance of {@link SSLPinger} with the SSLContext algorithm 
+     * specified through the parameter.
      * @param algorithm The SSLContext algorithm to use.
      * @throws NoSuchAlgorithmException
      * @throws KeyManagementException 
