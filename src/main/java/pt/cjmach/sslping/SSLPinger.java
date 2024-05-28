@@ -53,19 +53,42 @@ public class SSLPinger {
         }
     }
 
+    /**
+     * Creates a new instance of {@link SSLPinger} that uses the default SSLContext
+     * algorithm.
+     * @throws NoSuchAlgorithmException 
+     */
     public SSLPinger() throws NoSuchAlgorithmException {
         this(SSLContext.getDefault());
     }
 
+    /**
+     * Creates a new instance of {@link SSLPinger} with the algorithm specified 
+     * through the parameter.
+     * @param algorithm The SSLContext algorithm to use.
+     * @throws NoSuchAlgorithmException
+     * @throws KeyManagementException 
+     */
     public SSLPinger(String algorithm) throws NoSuchAlgorithmException, KeyManagementException {
         this(SSLContext.getInstance(algorithm));
         context.init(null, null, null);
     }
 
+    /**
+     * 
+     * @param context 
+     */
     private SSLPinger(SSLContext context) {
         this.context = context;
     }
     
+    /**
+     * 
+     * @param host
+     * @param port
+     * @return
+     * @throws IOException 
+     */
     private SSLSocket createSSLSocket(String host, int port) throws IOException {
         if (PROXY_HOST == null) {
             SSLSocketFactory factory = context.getSocketFactory();
@@ -75,10 +98,12 @@ public class SSLPinger {
     }
     
     /**
-     * 
-     * @param host
-     * @param port
-     * @return
+     * Creates a {@link javax.net.ssl.SSLSocket} instance that communicates 
+     * through a proxy server.
+     * @param host The host to connect to.
+     * @param port The port on the host to connect to. Must be between 1 and 65535.
+     * @return An instance of {@link javax.net.ssl.SSLSocket} setup to tunnel the 
+     * communication through a proxy server.
      * @throws IOException 
      * @see https://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/samples/sockets/client/SSLSocketClientWithTunneling.java
      */
@@ -125,6 +150,15 @@ public class SSLPinger {
         return (SSLSocket) factory.createSocket(proxySocket, host, port, true);
     }
 
+    /**
+     * Tries to connect to the host using a secure socket connection.
+     * 
+     * @param host The host to connect to.
+     * @param port The port on the host to connect to. Must be between 1 and 65535.
+     * @throws IOException If the connection fails, either because the host refused 
+     * the connection or because there are no valid certificates on the local java 
+     * keystore to successfully complete the secure connection handshake.
+     */
     public void ping(String host, int port) throws IOException {
         if (host == null) {
             throw new NullPointerException("[ERROR] host is null.");
@@ -141,6 +175,12 @@ public class SSLPinger {
         }
     }
     
+    /**
+     * Sends one byte to the host connected through the socket.
+     * 
+     * @param socket The socket to use.
+     * @throws IOException If the operation fails.
+     */
     private void ping(SSLSocket socket) throws IOException {
         InputStream input = socket.getInputStream();
         OutputStream output = socket.getOutputStream();
@@ -156,6 +196,12 @@ public class SSLPinger {
         }
     }
 
+    /**
+     * Returns a list of algorithm names that can be used to create an instance 
+     * of {@link javax.net.ssl.SSLContext}.
+     * @return List of algorithm names.
+     * @see https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#sslcontext-algorithms
+     */
     public static List<String> getAvailableAlgorithms() {
         Provider[] providers = Security.getProviders();
         List<String> result = new ArrayList<>();
