@@ -37,7 +37,9 @@ system properties to setup the proxy hostname, port and optionally credentials:
 Example:
 
 ```console
-$ java -Dhttps.proxyHost=proxy.example.com -Dhttps.proxyPort=3128 -Dhttps.proxyUser=username -Dhttps.proxyPassword=passwd -jar sslping.jar -H server.example.com
+$ java -Dhttps.proxyHost=proxy.example.com -Dhttps.proxyPort=3128 \
+       -Dhttps.proxyUser=username -Dhttps.proxyPassword=passwd \
+       -jar sslping.jar -H server.example.com
 [INFO] Successfully connected
 ```
 
