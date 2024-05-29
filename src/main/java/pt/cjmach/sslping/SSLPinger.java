@@ -18,8 +18,10 @@ package pt.cjmach.sslping;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.net.SocketAddress;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -36,23 +38,8 @@ import javax.net.ssl.SSLSocketFactory;
  * @author cmachado
  */
 public class SSLPinger {
-    private final static String USER_AGENT = "sslping";
-    private final static String PROXY_HOST;
-    private final static int PROXY_PORT;
-
     private final SSLContext context;
     
-    static {
-        String systemProxyHost = System.getProperty("https.proxyHost");
-        if (systemProxyHost != null && !systemProxyHost.isEmpty()) {
-            PROXY_HOST = systemProxyHost;
-            PROXY_PORT = Integer.getInteger("https.proxyPort");
-        } else {
-            PROXY_HOST = null;
-            PROXY_PORT = 0;
-        }
-    }
-
     /**
      * Creates a new instance of {@link SSLPinger} that uses the default SSLContext
      * algorithm.
@@ -90,64 +77,45 @@ public class SSLPinger {
      * @throws IOException 
      */
     private SSLSocket createSSLSocket(String host, int port) throws IOException {
-        if (PROXY_HOST == null) {
-            SSLSocketFactory factory = context.getSocketFactory();
-            return (SSLSocket) factory.createSocket(host, port);
+        String proxyHost = getProxyHost();
+        Integer proxyPort = getProxyPort();
+        if (proxyHost != null) {
+            return createTunneledSSLSocket(proxyHost, proxyPort, host, port);
         }
-        return createTunneledSSLSocket(host, port);
+        SSLSocketFactory factory = context.getSocketFactory();
+        return (SSLSocket) factory.createSocket(host, port);
     }
     
     /**
      * Creates a {@link javax.net.ssl.SSLSocket} instance that communicates 
      * through a proxy server.
+     * @param proxyHost The proxy host to connect to.
+     * @param proxyPort The port on the proxy host to connect to.
      * @param host The host to connect to.
      * @param port The port on the host to connect to. Must be between 1 and 65535.
      * @return An instance of {@link javax.net.ssl.SSLSocket} setup to tunnel the 
      * communication through a proxy server.
      * @throws IOException 
-     * @see https://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/samples/sockets/client/SSLSocketClientWithTunneling.java
      */
-    private SSLSocket createTunneledSSLSocket(String host, int port) throws IOException {
-        Socket proxySocket = new Socket(PROXY_HOST, PROXY_PORT);
-        String proxyMsg = String.format("CONNECT %s:%d HTTP/1.1\r\nUser-Agent: %s\r\n\r\n", 
-                                            host, port, USER_AGENT);
-        byte[] proxyMsgBytes = proxyMsg.getBytes(StandardCharsets.US_ASCII);
-
-        // send connect
-        OutputStream outStream = proxySocket.getOutputStream();
-        outStream.write(proxyMsgBytes);
-        outStream.flush();
-
-        // get proxy response
-        InputStream inStream = proxySocket.getInputStream();
-        byte[] replyBytes = new byte[200];
-        int replyLen = 0;
-        int newlinesSeen = 0;
-        boolean headerDone = false;
-
-        while (newlinesSeen < 2) {
-            int i = inStream.read();
-            if (i < 0) {
-                throw new IOException("[ERROR] Unexpected EOF from proxy.");
-            }
-            if (i == '\n') {
-                headerDone = true;
-                ++newlinesSeen;
-            } else if (i != '\r') {
-                newlinesSeen = 0;
-                if (!headerDone && replyLen < replyBytes.length) {
-                    replyBytes[replyLen++] = (byte) i;
-                }
-            }
-        }
-
-        String response = new String(replyBytes, 0, replyLen, StandardCharsets.US_ASCII);
-        if (!response.startsWith("HTTP/1.1 200")) {
-            throw new IOException(String.format("[ERROR] Could not connect to proxy %s:%d. Status: %s",
-                    PROXY_HOST, PROXY_PORT, response));
-        }
+    private SSLSocket createTunneledSSLSocket(String proxyHost, int proxyPort, String host, int port) throws IOException {
+        SocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, proxyAddr);
+        Socket proxySocket = new Socket(proxy);
+        
+        SocketAddress hostAddr = new InetSocketAddress(host, port);
+        proxySocket.connect(hostAddr);
+        
         SSLSocketFactory factory = context.getSocketFactory();
         return (SSLSocket) factory.createSocket(proxySocket, host, port, true);
+    }
+    
+    private static String getProxyHost() {
+        String proxyHost = System.getProperty("https.proxyHost");
+        return proxyHost == null || proxyHost.isEmpty() ? null : proxyHost;
+    }
+    
+    private static Integer getProxyPort() {
+        return Integer.getInteger("https.proxyPort");
     }
 
     /**
