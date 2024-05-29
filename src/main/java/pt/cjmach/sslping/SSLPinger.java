@@ -18,6 +18,7 @@ package pt.cjmach.sslping;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
@@ -98,15 +99,29 @@ public class SSLPinger {
      * @throws IOException 
      */
     private SSLSocket createTunneledSSLSocket(String proxyHost, int proxyPort, String host, int port) throws IOException {
-        SocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, proxyAddr);
-        Socket proxySocket = new Socket(proxy);
-        
-        SocketAddress hostAddr = new InetSocketAddress(host, port);
-        proxySocket.connect(hostAddr);
-        
-        SSLSocketFactory factory = context.getSocketFactory();
-        return (SSLSocket) factory.createSocket(proxySocket, host, port, true);
+        Authenticator currentAuthenticator = Authenticator.getDefault();
+        String tunnelingDisabledSchemes = System.getProperty("jdk.http.auth.tunneling.disabledSchemes");
+        ProxyAuthenticator proxyAuthenticator = new ProxyAuthenticator(proxyHost, proxyPort);
+        try {
+            
+            Authenticator.setDefault(proxyAuthenticator);
+            System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+            
+            SocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, proxyAddr);
+            Socket proxySocket = new Socket(proxy);
+            
+            SocketAddress hostAddr = new InetSocketAddress(host, port);
+            proxySocket.connect(hostAddr);
+            
+            SSLSocketFactory factory = context.getSocketFactory();
+            return (SSLSocket) factory.createSocket(proxySocket, host, port, true);
+        } finally {
+            Authenticator.setDefault(currentAuthenticator);
+            if (tunnelingDisabledSchemes != null) {
+                System.setProperty("jdk.http.auth.tunneling.disabledSchemes", tunnelingDisabledSchemes);
+            }
+        }
     }
     
     private static String getProxyHost() {
