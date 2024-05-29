@@ -44,7 +44,7 @@ public class ProxyAuthenticator extends Authenticator {
     }
     
     protected String getProxyUser() {
-        String proxyUser = System.getProperty("https.proxyUser", System.getProperty("http.proxyUser"));
+        String proxyUser = System.getProperty("http.proxyUser");
         if (proxyUser == null) {
             return "";
         }
@@ -52,7 +52,7 @@ public class ProxyAuthenticator extends Authenticator {
     }
     
     protected char[] getProxyPassword() {
-        String passwd = System.getProperty("https.proxyPassword", System.getProperty("http.proxyPassword"));
+        String passwd = System.getProperty("http.proxyPassword");
         return passwd == null ? new char[0] : passwd.toCharArray();
     }
 }
