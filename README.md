@@ -27,6 +27,20 @@ $ java -jar sslping.jar -H server.example.com
 [INFO] Successfully connected.
 ```
 
+If the connection has to go through a proxy server, you can use the following Java
+system properties to setup the proxy hostname, port and optionally credentials:
+- **https.proxyHost**: Hostname or IP address of the proxy server.
+- **https.proxyPort**: Port of the proxy server to connect to.
+- **https.proxyUser**: (Optional) Proxy user name.
+- **https.proxyPassword**: (Optional) Proxy user password.
+
+Example:
+
+```console
+$ java -Dhttps.proxyHost=proxy.example.com -Dhttps.proxyPort=3128 -Dhttps.proxyUser=username -Dhttps.proxyPassword=passwd -jar sslping.jar -H server.example.com
+[INFO] Successfully connected
+```
+
 # Building
 
 To build this project you need:
