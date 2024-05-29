@@ -66,7 +66,7 @@ public class Launcher implements Callable<Integer> {
      */
     @Override
     public Integer call() throws Exception {
-        SSLPinger pinger = null;
+        SSLPinger pinger;
         try {
             pinger = algorithm == null ? new SSLPinger() : new SSLPinger(algorithm);
         } catch (NoSuchAlgorithmException ex) {
