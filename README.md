@@ -5,7 +5,7 @@ certificates are valid and are properly installed on your local java keystore.
 
 # Requirements
 
-- Java Runtime Environment 8
+- Java Runtime Environment 11
 
 # Usage
 
