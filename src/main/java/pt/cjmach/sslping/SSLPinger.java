@@ -125,12 +125,12 @@ public class SSLPinger {
     }
     
     private static String getProxyHost() {
-        String proxyHost = System.getProperty("https.proxyHost");
+        String proxyHost = System.getProperty("http.proxyHost");
         return proxyHost == null || proxyHost.isEmpty() ? null : proxyHost;
     }
     
     private static Integer getProxyPort() {
-        return Integer.getInteger("https.proxyPort");
+        return Integer.getInteger("http.proxyPort");
     }
 
     /**
