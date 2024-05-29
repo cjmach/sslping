@@ -25,12 +25,15 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
 import java.security.Provider;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -153,6 +156,9 @@ public class SSLPinger {
             throw new IllegalArgumentException("[ERROR] Port must be between 1 and 65535. Current value: " + port);
         }
         try (SSLSocket socket = createSSLSocket(host, port)) {
+            socket.addHandshakeCompletedListener(e -> {
+                printHandshakeInfo(e);
+            });
             socket.startHandshake();        
             ping(socket);
         }
@@ -195,5 +201,16 @@ public class SSLPinger {
             }
         }
         return result;
+    }
+    
+    private static void printHandshakeInfo(HandshakeCompletedEvent e) {
+        System.err.print("[INFO] Peer Principal: ");
+        try {
+            Principal p = e.getPeerPrincipal();
+            System.err.println(p);
+            System.err.println("[INFO] Cipher suite: " + e.getCipherSuite());
+        } catch (SSLPeerUnverifiedException ex) {
+            System.err.println(ex.getMessage());
+        }
     }
 }
