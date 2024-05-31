@@ -25,34 +25,36 @@ import java.net.PasswordAuthentication;
 public class ProxyAuthenticator extends Authenticator {
     private final String proxyHost;
     private final int proxyPort;
+    private final String proxyUser;
+    private final char[] proxyPassword;
 
-    public ProxyAuthenticator(String proxyHost, int proxyPort) {
+    public ProxyAuthenticator(String proxyHost, int proxyPort, String proxyUser, char[] proxyPassword) {
         this.proxyHost = proxyHost;
         this.proxyPort = proxyPort;
+        this.proxyUser = proxyUser;
+        this.proxyPassword = proxyPassword;
     }
 
     @Override
     protected PasswordAuthentication getPasswordAuthentication() {
+        String user = getProxyUser();
+        if (user == null) {
+            return null;
+        }
+        char[] passwd = getProxyPassword();
         String host = getRequestingHost();
         int port = getRequestingPort();
         if (host.equals(proxyHost) && port == proxyPort) {
-            String proxyUser = getProxyUser();
-            char[] proxyPasswd = getProxyPassword();
-            return new PasswordAuthentication(proxyUser, proxyPasswd);
+            return new PasswordAuthentication(user, passwd);
         }
         return null;
     }
     
     protected String getProxyUser() {
-        String proxyUser = System.getProperty("http.proxyUser");
-        if (proxyUser == null) {
-            return "";
-        }
         return proxyUser;
     }
     
     protected char[] getProxyPassword() {
-        String passwd = System.getProperty("http.proxyPassword");
-        return passwd == null ? new char[0] : passwd.toCharArray();
+        return proxyPassword;
     }
 }
