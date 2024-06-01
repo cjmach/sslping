@@ -200,6 +200,9 @@ public class SSLPinger {
             throw new IOException("[ERROR] Could not get response from proxy.");
         }
         if (proxyResponse.startsWith("HTTP/1.1 407")) { // proxy requires authentication
+            if (proxyUser == null) {
+                throw new IOException("Proxy requires authentication and no credentials provided.");
+            }
             // get authentication method and content length.
             String authMethod = null;
             String contentLength = null;
