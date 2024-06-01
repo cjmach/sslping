@@ -12,11 +12,14 @@ certificates are valid and are properly installed on your local java keystore.
 ```console
 Usage: sslping [-hv] [-a=NAME] -H=HOSTNAME [-P=NUMBER]
 Checks if secure communication between your local JVM and a remote host is successful.
-  -a, --algorithm=NAME  SSLContext algorithm to use. Default is determined by the JVM.
-  -h, --help            Print help and exit.
-  -H, --host=HOSTNAME   Try to establish secure communication with this host. Required option.
-  -P, --port=NUMBER     Port to use. Default is 443.
-  -v, --version         Print version and exit.
+  -a, --algorithm=NAME      SSLContext algorithm to use. Default is determined by the JVM.
+  -h, --help                Print help and exit.
+  -H, --host=HOSTNAME       Try to establish secure communication with this host. Required option.
+  -p, --proxy-url=URL       (Optional) URL to the proxy server (e.g. http://192.168.1.2:3128).
+  -P, --port=NUMBER         Port to use. Default is 443.
+      --proxy-password=PWD  (Optional) Proxy user password.
+      --proxy-user=USER     (Optional) Proxy user name.
+  -v, --version             Print version and exit.
 ```
 
 For example, the following command will check if it's possible to establish a 
@@ -24,27 +27,27 @@ secure connection with server server.example.com, listening on port 443:
 
 ```console
 $ java -jar sslping.jar -H server.example.com
+[INFO] Peer Handshake Info: CN=server.example.com
+[INFO] Cipher suite: TLS_AES_256_GCM_SHA384
+
 [INFO] Successfully connected.
 ```
 
-If the connection has to go through a proxy server, you can use the following Java
-system properties to setup the proxy hostname, port and optionally credentials:
-- **http.proxyHost**: Hostname or IP address of the proxy server.
-- **http.proxyPort**: Port of the proxy server to connect to.
-- **http.proxyUser**: (Optional) Proxy user name.
-- **http.proxyPassword**: (Optional) Proxy user password.
-
-Example:
+If the connection has to go through a proxy server, you can use the following 
+parameters to setup the proxy hostname, port and optionally credentials:
 
 ```console
-$ java -Dhttp.proxyHost=proxy.example.com -Dhttp.proxyPort=3128 \
-       -Dhttp.proxyUser=username -Dhttp.proxyPassword=passwd \
-       -jar sslping.jar -H server.example.com
-[INFO] Successfully connected
-```
+$ java -jar sslping.jar -H server.example.com -p https://192.168.1.2:3128 \
+       --proxy-user user --proxy-password passwd
+[INFO] Connecting to host server.example.com:443 through secure proxy 192.168.1.2:3128...
+[INFO] Proxy Handshake Info: CN=proxy-ca, C=AD
+[INFO] Cipher suite: TLS_AES_256_GCM_SHA384
 
-For now, only HTTP proxies are supported, but we expect to provide support for 
-HTTPS proxies in future versions.
+[INFO] Peer Handshake Info: CN=server.example.com
+[INFO] Cipher suite: TLS_AES_256_GCM_SHA384
+
+[INFO] Successfully connected.
+```
 
 # Building
 

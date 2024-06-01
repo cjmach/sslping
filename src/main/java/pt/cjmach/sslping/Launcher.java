@@ -16,6 +16,7 @@
 package pt.cjmach.sslping;
 
 import java.io.IOException;
+import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -44,6 +45,18 @@ public class Launcher implements Callable<Integer> {
     @Option(names = {"-a", "--algorithm"}, paramLabel = "NAME", required = false,
             description = "SSLContext algorithm to use. Default is determined by the JVM.")
     private String algorithm;
+    
+    @Option(names = {"-p", "--proxy-url"}, paramLabel = "URL", required = false,
+            description = "(Optional) URL to the proxy server (e.g. http://192.168.1.2:3128).")
+    private URL proxyUrl;
+    
+    @Option(names = {"--proxy-user"}, paramLabel = "USER", required = false,
+            description = "(Optional) Proxy user name.")
+    private String proxyUser;
+    
+    @Option(names = {"--proxy-password"}, paramLabel = "PWD", required = false,
+            description = "(Optional) Proxy user password.")
+    private char[] proxyPassword;
     
     /**
      * 
@@ -79,7 +92,7 @@ public class Launcher implements Callable<Integer> {
             return 1;
         }
         try {
-            pinger.ping(host, port);
+            pinger.ping(host, port, proxyUrl, proxyUser, proxyPassword);
             System.out.println("[INFO] Successfully connected.");
             return 0;
         } catch (IOException ex) {
