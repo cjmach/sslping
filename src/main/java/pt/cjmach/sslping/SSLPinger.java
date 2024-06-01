@@ -217,7 +217,8 @@ public class SSLPinger {
             }
             if (contentLength != null) {
                 long length = Long.parseLong(contentLength);
-                readBuffer.skip(length); // skip message body
+                long skipped = readBuffer.skip(length); // skip message body
+                assert skipped == length;
             }
             if ("Basic".equalsIgnoreCase(authMethod)) {
                 // send connect with authentication
