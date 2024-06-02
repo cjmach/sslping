@@ -204,14 +204,15 @@ public class SSLPinger {
                 throw new IOException("Proxy requires authentication and no credentials provided.");
             }
             // get authentication method and content length.
-            String authMethod = null;
+            List<String> authMethods = new ArrayList<>();
             String contentLength = null;
             Pattern authPattern = Pattern.compile("^Proxy-Authenticate:\\s*(\\w+)\\s*.+$", Pattern.CASE_INSENSITIVE);
             Pattern lengthPattern = Pattern.compile("^Content-Length:\\s*(\\d+)", Pattern.CASE_INSENSITIVE);
             while ((proxyResponse = readBuffer.readLine()) != null && !proxyResponse.isEmpty()) {
                 Matcher authMatcher = authPattern.matcher(proxyResponse);
                 if (authMatcher.matches()) {
-                    authMethod = authMatcher.group(1);
+                    String authMethod = authMatcher.group(1);
+                    authMethods.add(authMethod);
                 }
                 Matcher lengthMatcher = lengthPattern.matcher(proxyResponse);
                 if (lengthMatcher.matches()) {
@@ -223,7 +224,7 @@ public class SSLPinger {
                 long skipped = readBuffer.skip(length); // skip message body
                 assert skipped == length;
             }
-            if ("Basic".equalsIgnoreCase(authMethod)) {
+            if (authMethods.contains("Basic")) {
                 // send connect with authentication
                 byte[] basicAuth = getBasicAuthentication(proxyUser, proxyPassword);
                 String base64BasicAuth = Base64.getEncoder().encodeToString(basicAuth);
@@ -235,7 +236,7 @@ public class SSLPinger {
                 // get proxy response
                 proxyResponse = readBuffer.readLine();
             } else {
-                throw new UnsupportedOperationException("Authentication method is not supported: " + authMethod);
+                throw new UnsupportedOperationException("Proxy authentication method is not supported.");
             }
         }
         if (proxyResponse == null || !proxyResponse.startsWith("HTTP/1.1 200")) {
