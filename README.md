@@ -51,13 +51,13 @@ $ java -jar sslping.jar -H server.example.com -p https://192.168.1.2:3128 \
 
 # Testing
 
-To test sslping, we used OPNSense + Squid running on a VM with a couple of network
+To test `sslping`, we used OPNSense + Squid running on a VM with a couple of network
 interface cards (NIC):
 - A host-only NIC for the LAN
 - A NAT NIC for the WAN
 
 Steps to configure Squid using OPNSense Web Interface:
-1. Go to "System / Firmware / Plugins" and install **os-squid** plugin;
+1. Go to "System / Firmware / Plugins" and install `os-squid` plugin;
 2. Go to "Services / Squid Web Proxy / Administration" and check "Enable proxy" 
 on the "General Proxy Settings" tab;
 3. On the "Forward Proxy" tab, ensure you have the following settings:
@@ -71,16 +71,17 @@ on the "General Proxy Settings" tab;
 Ensure you have the following settings:
   - Allowed destination TCP port: 80 443
   - Allowed SSL ports: 443
-5. To test proxy authentication, click on the arrow next to the "Forward Proxy" tab 
-and select "Authentication Settings". Then, set the authentication method.
+5. To test proxy authentication, click on the arrow next to the "Forward Proxy" 
+tab and select "Authentication Settings". Then, set the authentication method.
 6. To test direct SSL connection to the proxy, add the following line to 
-/usr/local/etc/squid/squid.conf file (replace "[LAN_IP]" with the LAN IP address):
+/usr/local/etc/squid/squid.conf file (replace `[LAN_IP]` with the IP address of 
+the LAN NIC):
 ```
 https_port [LAN_IP]:3129 cert=/var/squid/ssl/ca.pem dynamic_cert_mem_cache_size=10MB generate-host-certificates=on
 ```
 7. To test alternative authentication methods, such as "Digest" for example, add 
 the following lines to squid.conf file. You must also create the "digest_passwd" file
-with the user's credentials, following the .htdigest format (use `htdigest` tool or 
+with the users credentials, following the .htdigest format (use `htdigest` tool or 
 [htdigest Generator Tool Online](https://websistent.com/tools/htdigest-generator-tool/)):
 ```
 auth_param digest program /usr/local/libexec/squid/digest_file_auth -c /usr/local/etc/squid/digest_passwd
