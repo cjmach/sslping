@@ -79,6 +79,11 @@ the LAN NIC):
 ```
 https_port [LAN_IP]:3129 cert=/var/squid/ssl/ca.pem dynamic_cert_mem_cache_size=10MB generate-host-certificates=on
 ```
+You must also add the CA certificate (proxy-ca.crt) created on step 3 to your 
+local JVM with the following command (download the certificate from the "Ca Manager" page):
+```console
+$ sudo keytool -import -trustcacerts -keystore [/path/to/jvm]/lib/security/cacerts -storepass changeit -noprompt -alias proxyca -file proxy-ca.crt
+```
 7. To test alternative authentication methods, such as "Digest" for example, add 
 the following lines to squid.conf file. You must also create the "digest_passwd" file
 with the users credentials, following the .htdigest format (use `htdigest` tool or 
