@@ -51,8 +51,9 @@ $ java -jar sslping.jar -H server.example.com -p https://192.168.1.2:3128 \
 
 # Testing
 
-To test `sslping`, we used OPNSense + Squid running on a VM with a couple of network
-interface cards (NIC):
+To test `sslping`, we used [OPNSense](https://github.com/opnsense/core) + 
+[Squid](https://github.com/squid-cache/squid) running on a VM with a couple of 
+network interface cards (NIC):
 - A host-only NIC for the LAN
 - A NAT NIC for the WAN
 
